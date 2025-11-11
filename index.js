@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: "*", // or ["https://yourfrontend.netlify.app"]
+  origin: process.env.FRONTEND_URL || "*",
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
