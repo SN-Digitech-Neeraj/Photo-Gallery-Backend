@@ -3,14 +3,16 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { dbConfig, PORT } from './configuration/db.config.js';
+import adminRoute from './controllers/Auth/admin.controller.js';
 
 dotenv.config();
 
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*",
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credential: true
 }));
 
 
@@ -26,6 +28,8 @@ app.get('/', (req, res) => res.send('✅ Backend is Running...'));
 // Example Routes
 // import userRoutes from './routes/user.routes.js';
 // app.use('/api/users', userRoutes);
+
+app.use('/api/auth', adminRoute);
 
 const port = PORT || 5000;
 app.listen(PORT,'0.0.0.0', () => console.log(`🚀 Server running on port ${port}`));
