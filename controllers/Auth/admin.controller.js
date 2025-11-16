@@ -1,7 +1,7 @@
 import express from "express";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
-import Admin from "../../models/Admin.modal.js"; // ✅ ensure correct path and filename
+import Admin from "../../models/Admin.model.js"; // ✅ ensure correct path and filename
 
 const router = express.Router();
 
