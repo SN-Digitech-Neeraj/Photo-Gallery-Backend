@@ -1,7 +1,7 @@
 import express from "express";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
-import Admin from "../../models/Admin.Modal.js";
+import Admin from "../../models/Admin.modal.js"; // ✅ ensure correct path and filename
 
 const router = express.Router();
 
@@ -31,9 +31,9 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error saving admin:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error. Please try again later." });
+    res.status(500).json({
+      message: "Internal server error. Please try again later.",
+    });
   }
 });
 
@@ -59,18 +59,17 @@ router.post("/login", async (req, res) => {
         id: admin._id,
         isAdmin: admin.isAdmin,
       },
-      process.env.JWT_SECRET_KEY, // ✅ match your verify middleware key name
+      process.env.JWT_SECRET_KEY,
       { expiresIn: "3d" }
     );
 
-    // ✅ Hide password field safely
     const { password, ...others } = admin._doc;
 
     res.status(200).json({
       success: true,
       message: "Login successful!",
       admin: { ...others },
-      token: accessToken, // ✅ consistent token key name
+      token: accessToken,
     });
   } catch (error) {
     console.error("❌ Login error:", error);
