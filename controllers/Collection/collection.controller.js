@@ -1,14 +1,14 @@
 import express from "express";
 import Collection from "../../models/Collection.model.js";
 import { upload } from "../../middlewares/cloudinary.js";
-import { verifyTokenAdmin } from "../../middlewares/auth.middlewares.js";
+import { verifyToken } from "../../middlewares/auth.middlewares.js";
 
 
 
 const router = express.Router();
 
 // Create Collection
-router.post("/create", verifyTokenAdmin, upload.single("thumbnail"), async (req, res) => {
+router.post("/create", verifyToken, upload.single("thumbnail"), async (req, res) => {
   try {
     const { collectionName } = req.body;
 
