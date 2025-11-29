@@ -1,82 +1,71 @@
 import express from "express";
-import CryptoJS from "crypto-js";
-import jwt from "jsonwebtoken";
-import Admin from "../../models/Admin.model.js"; // ✅ ensure correct path and filename
+import { verifyToken } from "../../middlewares/auth.middlewares.js";
+
+import { 
+  adminRegisterService, 
+  adminLoginService, 
+  logoutAdmin 
+} from "../services/admin.service.js";
 
 const router = express.Router();
+
 
 // 🟢 Register Admin
 router.post("/register", async (req, res) => {
   try {
-    const existingAdmin = await Admin.findOne({ email: req.body.email });
-    if (existingAdmin) {
-      return res.status(400).json({ message: "Email already registered!" });
+    const { email, password } = req.body;
+
+    const result = await adminRegisterService({ email, password });
+
+    if (!result.success) {
+      return res.status(400).json(result);
     }
 
-    const encryptedPassword = CryptoJS.AES.encrypt(
-      req.body.password,
-      process.env.PASS_SEC_KEY
-    ).toString();
+    return res.status(201).json(result);
 
-    const newAdmin = new Admin({
-      email: req.body.email,
-      password: encryptedPassword,
-    });
-
-    const savedAdmin = await newAdmin.save();
-    res.status(201).json({
-      success: true,
-      message: "Admin created successfully!",
-      admin: savedAdmin,
-    });
   } catch (error) {
-    console.error("❌ Error saving admin:", error);
-    res.status(500).json({
-      message: "Internal server error. Please try again later.",
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
+
 
 // 🟡 Login Admin
 router.post("/login", async (req, res) => {
   try {
-    const admin = await Admin.findOne({ email: req.body.email });
-    if (!admin) {
-      return res.status(401).json({ message: "Invalid email or password!" });
+    const { email, password } = req.body;
+
+    const response = await adminLoginService(email, password);
+
+    if (!response.success) {
+      return res.status(400).json(response);
     }
 
-    const decryptedPassword = CryptoJS.AES.decrypt(
-      admin.password,
-      process.env.PASS_SEC_KEY
-    ).toString(CryptoJS.enc.Utf8);
+    return res.status(200).json(response);
 
-    if (decryptedPassword !== req.body.password) {
-      return res.status(401).json({ message: "Invalid email or password!" });
-    }
-
-    const accessToken = jwt.sign(
-      {
-        id: admin._id,
-        isAdmin: admin.isAdmin,
-      },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "3d" }
-    );
-
-    const { password, ...others } = admin._doc;
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful!",
-      admin: { ...others },
-      token: accessToken,
-    });
   } catch (error) {
-    console.error("❌ Login error:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error during login!" });
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
+
+
+// 🔴 Logout Admin
+router.post("/logout", verifyToken, async (req, res) => {
+  try {
+    // ⭐ FIX: Token should come from verifyToken middleware, not headers
+    const token = req.token; // 👍 Cleaner & recommended
+
+    const response = await logoutAdmin(token);
+
+    if (!response.success) {
+      return res.status(400).json(response);
+    }
+
+    return res.status(200).json(response);
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 
 export default router;

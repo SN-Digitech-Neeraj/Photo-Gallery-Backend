@@ -10,13 +10,31 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: [ "process.env.FRONTEND_URL", "http://localhost:5173"] || "*" ,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders:['Content-Type', 'Authorization'],
-  credentials: true
-}));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173"
+];
+// app.use(cors({
+//   origin: [ process.env.FRONTEND_URL, "http://localhost:5173"] || "*" ,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders:['Content-Type', 'Authorization'],
+//   credentials: true
+// }));
 
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
@@ -35,4 +53,4 @@ app.use('/api/auth', adminRoute);
 app.use("/api/collections", collectionRoute);
 
 const port = PORT || 5000;
-app.listen(PORT,'0.0.0.0', () => console.log(`🚀 Server running on port ${port}`));
+app.listen(port,'0.0.0.0', () => console.log(`🚀 Server running on port ${port}`));

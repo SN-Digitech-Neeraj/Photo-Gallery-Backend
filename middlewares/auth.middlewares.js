@@ -27,6 +27,7 @@ export const verifyToken = (req, res, next) => {
     }
 
     req.admin = admin;
+    req.token = token; 
     next();
   });
 };
